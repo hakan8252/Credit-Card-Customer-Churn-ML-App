@@ -9,7 +9,7 @@ import plotly.express as px
 # Load the LightGBM model
 
 # Load the original DataFrame (replace 'your_data.csv' with the actual file path)
-original_df = pd.read_csv('D:\\java\\stream\\Credit-Card\\train_df.csv')
+original_df = pd.read_csv('https://github.com/hakan8252/Credit-Card-Customer-Churn-ML-App/tree/main/train_df.csv')
 
 X = original_df.drop('Attrition_Flag', axis=1)
 y = original_df['Attrition_Flag']

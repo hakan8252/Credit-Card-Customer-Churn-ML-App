@@ -12,6 +12,7 @@ Dynamic adjustment of input parameters for personalized predictions.
 Interactive visualizations, including bar charts, pie charts, and sunburst charts.
 Integration of a LightGBM machine learning model for accurate predictions.
 User-friendly interface for seamless interaction and data exploration. <br/>
+
 Technologies Used:
 
 Python (Streamlit, Pandas, NumPy, scikit-learn)

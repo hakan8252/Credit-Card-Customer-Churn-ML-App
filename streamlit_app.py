@@ -6,7 +6,9 @@ from sklearn.model_selection import train_test_split
 import plotly.express as px
 
 # Load the LightGBM model
-# Load the LightGBM model
+with open('style.css') as f:
+    st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
+
 
 # Load the original DataFrame (replace 'your_data.csv' with the actual file path)
 original_df = pd.read_csv('train_df.csv')

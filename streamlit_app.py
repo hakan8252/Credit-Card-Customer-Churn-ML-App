@@ -4,19 +4,21 @@ import joblib
 import lightgbm as lgb
 from sklearn.model_selection import train_test_split
 import plotly.express as px
+from sklearn.preprocessing import StandardScaler
 
-# # Load the LightGBM model
-# with open('style.css') as f:
-#     st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
+# Load the LightGBM model
+lightgbm_model = joblib.load('D:\java\stream\Credit-Card\lightgbm_model.pkl')
 
+# Set background color for the entire app
+with open('D:\java\stream\Credit-Card\style.css') as f:
+    st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
 
 # Load the original DataFrame (replace 'your_data.csv' with the actual file path)
-original_df = pd.read_csv('train_df.csv')
+original_df = pd.read_csv('D:\\java\\stream\\Credit-Card\\train_df.csv')
 
 X = original_df.drop('Attrition_Flag', axis=1)
 y = original_df['Attrition_Flag']
 
-original_df.drop('Attrition_Flag', axis=1, inplace=True)
 
 # Default values (you can adjust these)
 default_values = {
@@ -59,18 +61,18 @@ if selected_page == 'Prediction':
     for feature, value in default_values.items():
         if feature in ['Gender', 'Education_Level', 'Marital_Status', 'Income_Category', 'Card_Category']:
             # Use default values if not present in the original DataFrame
-            default_index = original_df[feature].to_list().index(value) if value in original_df[feature].unique() else 0
-            user_inputs[feature] = st.sidebar.selectbox(f'Select {feature}', original_df[feature].unique(), index=default_index)
+            default_index = X[feature].to_list().index(value) if value in X[feature].unique() else 0
+            user_inputs[feature] = st.sidebar.selectbox(f'Select {feature}', X[feature].unique(), index=default_index)
         else:
-            if original_df[feature].dtype == 'float64':
-                min_value = original_df[feature].min()
-                max_value = original_df[feature].max()
+            if X[feature].dtype == 'float64':
+                min_value = X[feature].min()
+                max_value = X[feature].max()
                 step = (max_value - min_value) / 100  # Adjust the step based on the range
                 # Set the min and max values for numerical features
                 user_inputs[feature] = st.sidebar.slider(f'Select {feature}', min_value=min_value, max_value=max_value, value=float(value),  step=step, key=f"{feature}_slider")
             else:
-                min_value = int(original_df[feature].min())
-                max_value = int(original_df[feature].max())
+                min_value = int(X[feature].min())
+                max_value = int(X[feature].max())
                 # Set the min and max values for numerical features
                 user_inputs[feature] = st.sidebar.number_input(f'Select {feature}', min_value=min_value, max_value=max_value, value=int(value))
 
@@ -80,15 +82,6 @@ if selected_page == 'Prediction':
 
     # Apply one-hot encoding to categorical variables
     categorical_columns = ['Gender', 'Education_Level', 'Marital_Status', 'Income_Category', 'Card_Category']
-
-    X = pd.get_dummies(X, columns=categorical_columns, drop_first=True)
-
-    # Assuming X and y are your feature matrix and target variable
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
-
-    # Assuming you have 'X_train_full' and 'y_train_full' as your full training set
-    lightgbm_model = lgb.LGBMClassifier()  # Replace 'CatBoostClassifier' with 'LGBMClassifier' if using LightGBM
-    lightgbm_model.fit(X_train, y_train)
 
     # Display user inputs
     st.subheader('User Inputs:')
@@ -101,16 +94,20 @@ if selected_page == 'Prediction':
         user_df = pd.DataFrame([user_inputs])
 
         # Concatenate user inputs with the original DataFrame
-        concatenated_df = pd.concat([user_df, original_df], ignore_index=True)
+        concatenated_df = pd.concat([user_df, X], ignore_index=True)
 
         # Ensure columns in user input align with the training data columns
-        user_input_for_prediction = concatenated_df.reindex(columns=original_df.columns, fill_value=0)
+        user_input_for_prediction = concatenated_df.reindex(columns=X.columns, fill_value=0)
 
         # Apply one-hot encoding to categorical variables
         user_input_for_prediction_encoded = pd.get_dummies(user_input_for_prediction, columns=categorical_columns, drop_first=True)
 
+        # Scale the data
+        scaler = StandardScaler()
+        X_scaled = scaler.fit_transform(user_input_for_prediction_encoded)
+
         # Make prediction and get probability estimates
-        prediction_proba = lightgbm_model.predict_proba(user_input_for_prediction_encoded)
+        prediction_proba = lightgbm_model.predict_proba(X_scaled)
 
         # Display prediction and probabilities
         st.subheader('Prediction:')
@@ -122,15 +119,18 @@ if selected_page == 'Prediction':
     # Add buttons to show examples for 0 and 1
     # Add buttons to show examples for 0 and 1
     if st.button('Show Example for No Attrition (0)'):
-        example_0 = X_train[y_train == 0].sample(1)
+        example_0 = X[y == 0].sample(1)
         st.subheader('Example for No Attrition (0):')
         st.write(example_0)
 
         # Concatenate user inputs with the original DataFrame
-        concatenated_df = pd.concat([example_0, original_df], ignore_index=True)
-        example_0_input_for_prediction = concatenated_df.reindex(columns=original_df.columns, fill_value=0)
+        concatenated_df = pd.concat([example_0, X], ignore_index=True)
+        example_0_input_for_prediction = concatenated_df.reindex(columns=X.columns, fill_value=0)
         example_0_input_encoded = pd.get_dummies(example_0_input_for_prediction, columns=categorical_columns, drop_first=True)
-        prediction_proba_0 = lightgbm_model.predict_proba(example_0_input_encoded)
+        # Scale the data
+        scaler = StandardScaler()
+        X_scaled_example_0 = scaler.fit_transform(example_0_input_encoded)
+        prediction_proba_0 = lightgbm_model.predict_proba(X_scaled_example_0)
 
         # Display prediction for example_0
         st.subheader('Prediction for No Attrition (0) Example:')
@@ -140,15 +140,17 @@ if selected_page == 'Prediction':
             st.success(f'No Attrition (0) - Probability: {prediction_proba_0[0, 0]:.5f}')
 
     if st.button('Show Example for Attrition (1)'):
-        example_1 = X_train[y_train == 1].sample(1)
+        example_1 = X[y == 1].sample(1)
         st.subheader('Example for Attrition (1):')
         st.write(example_1)
 
         # Concatenate user inputs with the original DataFrame
-        concatenated_df = pd.concat([example_1, original_df], ignore_index=True)
-        example_1_input_for_prediction = concatenated_df.reindex(columns=original_df.columns, fill_value=0)
+        concatenated_df = pd.concat([example_1, X], ignore_index=True)
+        example_1_input_for_prediction = concatenated_df.reindex(columns=X.columns, fill_value=0)
         example_1_input_encoded = pd.get_dummies(example_1_input_for_prediction, columns=categorical_columns, drop_first=True)
-        prediction_proba_1 = lightgbm_model.predict_proba(example_1_input_encoded)
+        scaler = StandardScaler()
+        X_scaled_example_1 = scaler.fit_transform(example_1_input_encoded)
+        prediction_proba_1 = lightgbm_model.predict_proba(X_scaled_example_1)
 
         # Display prediction for example_1
         st.subheader('Prediction for Attrition (1) Example:')
@@ -160,13 +162,13 @@ if selected_page == 'Prediction':
 elif selected_page == 'Numeric Variables Visualization':
     # Page for Numeric Variables Visualization
     st.subheader('Numeric Variables Visualization Options')
-    selected_numeric_variable = st.selectbox('Select Numeric Variable:', original_df.select_dtypes(include=['int64', 'float64']).columns)
+    selected_numeric_variable = st.selectbox('Select Numeric Variable:', X.select_dtypes(include=['int64', 'float64']).columns)
 
     if st.button('Generate Histogram'):
         st.subheader(f'Histogram for {selected_numeric_variable}')
 
         # Create histogram using Plotly
-        fig = px.histogram(original_df, x=selected_numeric_variable, title=f'Histogram for {selected_numeric_variable}')
+        fig = px.histogram(X, x=selected_numeric_variable, title=f'Histogram for {selected_numeric_variable}')
 
         st.plotly_chart(fig)
 
@@ -174,7 +176,7 @@ elif selected_page == 'Categorical Variables Visualization':
     # Page for Categorical Variables Visualization
     st.subheader('Categorical Variables Visualization Options')
     selected_categorical_variable = st.selectbox('Select Categorical Variable:',
-                                                 original_df.select_dtypes(include='object').columns)
+                                                 X.select_dtypes(include='object').columns)
     chart_type = st.selectbox('Select Chart Type:', ['Bar Chart', 'Pie Chart', 'Sunburst Chart'])
 
 
@@ -182,7 +184,7 @@ elif selected_page == 'Categorical Variables Visualization':
 
     if chart_type == 'Bar Chart':
         # Create a DataFrame with counts for each category
-        count_df = original_df[selected_categorical_variable].value_counts().reset_index()
+        count_df = X[selected_categorical_variable].value_counts().reset_index()
         count_df.columns = [selected_categorical_variable, 'Count']
 
         # Create bar chart using Plotly with data labels
@@ -191,7 +193,7 @@ elif selected_page == 'Categorical Variables Visualization':
 
     elif chart_type == 'Pie Chart':
         # Create pie chart using Plotly
-        fig = px.pie(original_df, names=selected_categorical_variable,
+        fig = px.pie(X, names=selected_categorical_variable,
                      title=f'Pie Chart for {selected_categorical_variable}')
 
 
@@ -202,7 +204,7 @@ elif selected_page == 'Categorical Variables Visualization':
         # st.subheader(f'Sunburst Chart for {selected_categorical_variable}')
 
         # Get the unique categorical columns
-        categorical_columns = original_df.select_dtypes(include='object').columns
+        categorical_columns = X.select_dtypes(include='object').columns
 
         # Convert categorical_columns to a list
         categorical_columns_list = list(categorical_columns)
@@ -212,7 +214,7 @@ elif selected_page == 'Categorical Variables Visualization':
                                     [col for col in categorical_columns_list if col != selected_categorical_variable])
 
         # Create sunburst chart using Plotly without color parameter
-        fig = px.sunburst(original_df, path=path_order + [selected_categorical_variable],
+        fig = px.sunburst(X, path=path_order + [selected_categorical_variable],
                           title=f'Sunburst Chart for {selected_categorical_variable} (Path Order: {path_order})')
 
         # Adjust layout for better visibility of data labels

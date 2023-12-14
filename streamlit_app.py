@@ -7,14 +7,14 @@ import plotly.express as px
 from sklearn.preprocessing import StandardScaler
 
 # Load the LightGBM model
-lightgbm_model = joblib.load('D:\java\stream\Credit-Card\lightgbm_model.pkl')
+lightgbm_model = joblib.load('lightgbm_model.pkl')
 
 # Set background color for the entire app
 with open('D:\java\stream\Credit-Card\style.css') as f:
     st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
 
 # Load the original DataFrame (replace 'your_data.csv' with the actual file path)
-original_df = pd.read_csv('D:\\java\\stream\\Credit-Card\\train_df.csv')
+original_df = pd.read_csv('train_df.csv')
 
 X = original_df.drop('Attrition_Flag', axis=1)
 y = original_df['Attrition_Flag']

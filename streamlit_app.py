@@ -10,7 +10,7 @@ from sklearn.preprocessing import StandardScaler
 lightgbm_model = joblib.load('lightgbm_model.pkl')
 
 # Set background color for the entire app
-with open('D:\java\stream\Credit-Card\style.css') as f:
+with open('style.css') as f:
     st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
 
 # Load the original DataFrame (replace 'your_data.csv' with the actual file path)

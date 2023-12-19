@@ -20,3 +20,5 @@ LightGBM for machine learning predictions
 Plotly and Matplotlib for interactive visualizations
 Outcome:
 A robust and user-friendly application that empowers users to make informed decisions based on predictive analytics and explore key insights within the credit card dataset.
+
+Project Link: https://credit-card-customer-churn-ml-app.streamlit.app/

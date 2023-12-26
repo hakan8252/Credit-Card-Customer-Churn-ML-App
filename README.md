@@ -21,5 +21,5 @@ Plotly and Matplotlib for interactive visualizations
 Outcome:
 A robust and user-friendly application that empowers users to make informed decisions based on predictive analytics and explore key insights within the credit card dataset.
 
-Project Link: https://credit-card-customer-churn-ml-app.streamlit.app/
+Project Link: https://credit-card-customer-churn-ml-app.streamlit.app/ <br/>
 Project Description : https://www.kaggle.com/datasets/sakshigoyal7/credit-card-customers

@@ -120,8 +120,6 @@ if selected_page == 'Prediction':
     # Add buttons to show examples for 0 and 1
     if st.button('Show Example for No Attrition (0)'):
         example_0 = X[y == 0].sample(1)
-        st.subheader('Example for No Attrition (0):')
-        st.write(example_0)
 
         # Concatenate user inputs with the original DataFrame
         concatenated_df = pd.concat([example_0, X], ignore_index=True)
@@ -141,8 +139,6 @@ if selected_page == 'Prediction':
 
     if st.button('Show Example for Attrition (1)'):
         example_1 = X[y == 1].sample(1)
-        st.subheader('Example for Attrition (1):')
-        st.write(example_1)
 
         # Concatenate user inputs with the original DataFrame
         concatenated_df = pd.concat([example_1, X], ignore_index=True)
